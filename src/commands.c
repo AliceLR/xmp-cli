@@ -36,7 +36,7 @@
  * typed out when running xmp. I have not investigated why this is
  * happening, but there is of course a reason why this mode is not
  * enabled by default.
- * 
+ *
  * 2. Do a select() before read()ing if the platform is Cygwin.
  * This makes Cygwin builds work out of the box with no fiddling around,
  * but does impose a neglectible cpu overhead (for Cygwin builds only).
@@ -120,6 +120,44 @@ static void change_sequence(xmp_context handle, const struct xmp_module_info *mi
 
 /* Interactive commands */
 
+/* HACK */
+static int keyboard_us(int cmd)
+{
+	switch(cmd) {
+	case 'z': return 0; // c
+	case 's': return 1; // c#
+	case 'x': return 2; // etc
+	case 'd': return 3;
+	case 'c': return 4;
+	case 'v': return 5;
+	case 'g': return 6;
+	case 'b': return 7;
+	case 'h': return 8;
+	case 'n': return 9;
+	case 'j': return 10;
+	case 'm': return 11;
+	case 'q': return 12; // c + 1
+	case '2': return 13;
+	case 'w': return 14;
+	case '3': return 15;
+	case 'e': return 16;
+	case 'r': return 17;
+	case '5': return 18;
+	case 't': return 19;
+	case '6': return 20;
+	case 'y': return 21;
+	case '7': return 22;
+	case 'u': return 23;
+	case 'i': return 24; // c + 2
+	case '9': return 25;
+	case 'o': return 26;
+	case '0': return 27;
+	case 'p': return 28;
+	}
+	return -1;
+}
+/* END HACK */
+
 /* VT100 ESC sequences:
  * ESC [ A - up arrow
  * ESC [ B - down arrow
@@ -128,11 +166,57 @@ static void change_sequence(xmp_context handle, const struct xmp_module_info *mi
  */
 void read_command(xmp_context handle, const struct xmp_module_info *mi, struct control *ctl)
 {
+	/* HACK */
+	static int octave = 3;
+	static int instrument = 0;
+	int note;
+	/* END HACK */
 	int cmd;
 
 	cmd = read_key();
 	if (cmd <= 0)
 		return;
+
+	/* HACK */
+	switch(cmd) {
+	case 'Q':		/* quit */
+		xmp_stop_module(handle);
+		ctl->pause = 0;
+		ctl->skip = -2;
+		break;
+	case ',': /* decrement octave */
+	case '<':
+		if (octave) octave--;
+		break;
+	case '.': /* increment octave */
+	case '>':
+		if (octave < 9) octave++;
+		break;
+	case '[': /* previous instrument */
+	case '(':
+		if (instrument) instrument--;
+		break;
+	case ']': /* next instrument */
+	case ')':
+		if (instrument + 1 < mi->mod->ins) instrument++;
+		break;
+	case '`': /* note cut */
+		xmp_smix_play_instrument(handle, instrument, XMP_KEY_CUT, 0, 0);
+		break;
+	case '=': /* note off */
+		xmp_smix_play_instrument(handle, instrument, XMP_KEY_OFF, 0, 0);
+		break;
+	case '+': /* note fade */
+		xmp_smix_play_instrument(handle, instrument, XMP_KEY_FADE, 0, 0);
+		break;
+	default: /* note */
+		note = keyboard_us(cmd);
+		if (note >= 0) {
+			xmp_smix_play_instrument(handle, instrument, note + octave * 12, 64, 0);
+		}
+	}
+	return;
+	/* END HACK */
 
 	switch (cmd) {
 	case 0x1b:		/* escape */

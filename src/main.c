@@ -452,6 +452,8 @@ int main(int argc, char **argv)
 		skipprev = 0;
 		control.time = 0.0;
 
+		xmp_start_smix(xc, 1, 1); /* HACK */
+
 		/* Play module */
 
 		if (xmp_start_player(xc, opt.rate, opt.format) == 0) {
@@ -524,7 +526,7 @@ int main(int argc, char **argv)
     play_sequence:
 			while (!opt.info && xmp_play_frame(xc) == 0) {
 				int old_loop = fi.loop_count;
-				
+
 				xmp_get_frame_info(xc, &fi);
 				control.mixer_type = xmp_get_player(
 						xc, XMP_PLAYER_MIXER_TYPE);
