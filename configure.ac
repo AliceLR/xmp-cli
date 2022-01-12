@@ -9,6 +9,8 @@ AC_ARG_ENABLE(alsa,
   [  --disable-alsa          don't compile ALSA support])
 AC_ARG_ENABLE(pulseaudio,
   [  --enable-pulseaudio     compile PulseAudio support])
+AC_ARG_ENABLE(pipewire,
+  [  --enable-pipewire       compile PipeWire support])
 
 AC_SUBST(LD_VERSCRIPT)
 AC_CANONICAL_HOST
@@ -120,6 +122,7 @@ AM_CONDITIONAL([SOUND_COREAUDIO], [false])
 AM_CONDITIONAL([SOUND_HPUX], [false])
 AM_CONDITIONAL([SOUND_NETBSD], [false])
 AM_CONDITIONAL([SOUND_OSS], [false])
+AM_CONDITIONAL([SOUND_PIPEWIRE], [false])
 AM_CONDITIONAL([SOUND_PULSEAUDIO], [false])
 AM_CONDITIONAL([SOUND_QNX], [false])
 AM_CONDITIONAL([SOUND_SGI], [false])
@@ -162,6 +165,20 @@ AS_IF([test "$enable_pulseaudio" = "yes"], [
 AS_IF([test "$enable_pulseaudio" = "yes"], [
   AC_DEFINE(SOUND_PULSEAUDIO, 1, [ ])
   AM_CONDITIONAL([SOUND_PULSEAUDIO], [true])
+])
+
+AS_IF([test "$enable_pipewire" = "yes"], [
+  PKG_CHECK_MODULES([pipewire], [libpipewire-0.3], [enable_pipewire=yes])
+], [
+  AS_IF([test "$enable_pipewire" != "no"], [
+    PKG_CHECK_MODULES([pipewire], [libpipewire-0.3],
+      AC_CHECK_LIB(pipewire-0.3, pw_stream_new_simple, [enable_pipewire=yes]),
+      [true])
+  ])
+])
+AS_IF([test "$enable_pipewire" = "yes"], [
+  AC_DEFINE(SOUND_PIPEWIRE, 1, [ ])
+  AM_CONDITIONAL([SOUND_PIPEWIRE], [true])
 ])
 
 case "${host_os}" in

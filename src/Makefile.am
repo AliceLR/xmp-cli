@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 
 AM_CPPFLAGS = -DSYSCONFDIR=\"${sysconfdir}/${PACKAGE_NAME}\" ${LIBXMP_CFLAGS} \
-              ${alsa_CFLAGS} ${pulseaudio_CFLAGS}
+              ${alsa_CFLAGS} ${pulseaudio_CFLAGS} ${pipewire_CFLAGS}
 AM_CFLAGS   = -Wall
 
 bin_PROGRAMS = xmp
@@ -25,6 +25,11 @@ endif
 if SOUND_PULSEAUDIO
 xmp_SOURCES += sound_pulseaudio.c
 xmp_LDADD   += ${pulseaudio_LIBS}
+endif
+
+if SOUND_PIPEWIRE
+xmp_SOURCES += sound_pipewire.c
+xmp_LDADD   += ${pipewire_LIBS}
 endif
 
 if SOUND_AHI
