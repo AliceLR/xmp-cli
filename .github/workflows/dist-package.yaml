@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo apt update && sudo apt install --no-install-recommends libxmp-dev libasound2-dev libpulse-dev libsndio-dev
       - name: Create and run configure script
@@ -21,7 +21,7 @@ jobs:
       - name: Test distribution package
         run: make distcheck DIST="xmp-$(git rev-parse --short HEAD)"
       - name: Archive dist packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: dist-packages
           path: |
