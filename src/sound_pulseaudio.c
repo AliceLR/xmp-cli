@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2016 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * This file is part of the Extended Module Player and is distributed
  * under the terms of the GNU General Public License. See the COPYING
@@ -12,16 +12,45 @@
 #include "sound.h"
 
 static pa_simple *s;
+static int downmix_24;
 
 
 static int init(struct options *options)
 {
 	pa_sample_spec ss;
+	int format = -1;
 	int error;
 
-	options->format &= ~(XMP_FORMAT_UNSIGNED | XMP_FORMAT_8BIT);
+	downmix_24 = 0;
+	if ((options->format & XMP_FORMAT_32BIT) && options->format_downmix == 24) {
+#ifdef PA_SAMPLE_S24_32NE
+		format = PA_SAMPLE_S24_32NE;
+		downmix_24 = 1;
+#else
+		options->format_downmix = 0;
+#endif
+	}
 
-	ss.format = PA_SAMPLE_S16NE;
+	if (format < 0 && (options->format & XMP_FORMAT_32BIT)) {
+#ifdef PA_SAMPLE_S32NE
+		format = PA_SAMPLE_S32NE;
+#else
+		options->format &= ~XMP_FORMAT_32BIT;
+#endif
+	}
+
+	if (format < 0 && (options->format & XMP_FORMAT_8BIT)) {
+		format = PA_SAMPLE_U8;
+		options->format |= XMP_FORMAT_UNSIGNED;
+	} else {
+		options->format &= ~XMP_FORMAT_UNSIGNED;
+	}
+
+	if (format < 0) {
+		format = PA_SAMPLE_S16NE;
+	}
+
+	ss.format = format;
 	ss.channels = options->format & XMP_FORMAT_MONO ? 1 : 2;
 	ss.rate = options->rate;
 
@@ -46,6 +75,10 @@ static int init(struct options *options)
 static void play(void *b, int i)
 {
 	int j, error;
+
+	if (downmix_24) {
+		downmix_32_to_24_aligned(b, i);
+	}
 
 	do {
 		if ((j = pa_simple_write(s, b, i, &error)) > 0) {
