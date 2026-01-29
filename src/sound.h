@@ -58,13 +58,19 @@ extern const struct sound_driver *const sound_driver_list[];
 #define chkparm2(x,y,z,w) { if (!strcmp(s, x)) { \
 	if (2 > sscanf(token, y, z, w)) parm_error(); } }
 
-static inline int is_big_endian(void) {
+static inline int is_big_endian(void)
+{
 	unsigned short w = 0x00ff;
 	return (*(char *)&w == 0x00);
 }
 
 void init_sound_drivers(void);
 const struct sound_driver *select_sound_driver(struct options *);
-void convert_endian(unsigned char *, int);
+void downmix_32_to_24_aligned(unsigned char *, int);
+int downmix_32_to_24_unaligned(unsigned char *, int);
+void convert_endian_16bit(unsigned char *, int);
+void convert_endian_24bit(unsigned char *, int);
+void convert_endian_32bit(unsigned char *, int);
+void convert_endian(unsigned char *, int, int);
 
 #endif

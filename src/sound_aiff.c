@@ -99,6 +99,7 @@ static int init(struct options *options)
 	} else {
 		fd = stdout;
 	}
+	options->format &= ~XMP_FORMAT_32BIT;
 
 	fwrite(hed, 1, 54, fd);
 
@@ -107,8 +108,8 @@ static int init(struct options *options)
 
 static void play(void *b, int len) 
 {
-	if (swap_endian && bits == 16) {
-		convert_endian((unsigned char *)b, len);
+	if (swap_endian) {
+		convert_endian((unsigned char *)b, len, bits);
 	}
 	fwrite(b, 1, len, fd);
 	size += len;

@@ -3,11 +3,19 @@ Stable versions
 
 4.2.1 (?):
 	Changes by Alice Rowan
+	- Support 24-bit and 32-bit output for the PulseAudio, ALSA,
+	  WAV, file drivers (requires libxmp 4.7.0+) (FIXME).
+	- Use XMP_MAX_SRATE as the limit for -f instead of 48000
+	  (requires libxmp 4.7.0+).
 	- Report pan value "---" for instruments/samples without
 	  a default panning value (sub->pan < 0).
 	- Don't unmute muted IT channels unless explicitly unmuted by
 	  the -S/--solo option.
-	- Use XMP_MAX_SRATE as the limit for -f instead of 48000.
+	- wav: fix incorrect RIFF length in output.
+	- wav: add terminal pad byte after odd length data chunks.
+	- file: fix incorrect handling of -Dendian ("big" would output
+	  little endian, anything else would output big endian).
+	- pulseaudio: support 8-bit output.
 
 4.2.0 (20230615):
 	Changes by Özkan Sezer:

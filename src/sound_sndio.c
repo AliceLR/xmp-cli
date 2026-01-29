@@ -68,6 +68,8 @@ static int init(struct options *options)
 		fprintf(stderr, "%s: failed to start audio device\n", __func__);
 		goto error;
 	}
+
+	options->format &= ~XMP_FORMAT_32BIT;
 	return 0;
 
     error:

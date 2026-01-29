@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2016 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * This file is part of the Extended Module Player and is distributed
  * under the terms of the GNU General Public License. See the COPYING
@@ -11,6 +11,7 @@
 #include "sound.h"
 
 static snd_pcm_t *pcm_handle;
+static int downmix_24;
 
 static int init(struct options *options)
 {
@@ -39,12 +40,20 @@ static int init(struct options *options)
 	}
 
 	channels = format & XMP_FORMAT_MONO ? 1 : 2;
-	if (format & XMP_FORMAT_UNSIGNED) {
-		fmt = format & XMP_FORMAT_8BIT ?
-				SND_PCM_FORMAT_U8 : SND_PCM_FORMAT_U16;
+	downmix_24 = 0;
+	if ((format & XMP_FORMAT_32BIT) && options->format_downmix != 24) {
+		fmt = format & XMP_FORMAT_UNSIGNED ?
+				SND_PCM_FORMAT_U32 : SND_PCM_FORMAT_S32;
+	} else if ((format & XMP_FORMAT_32BIT) && options->format_downmix == 24) {
+		fmt = format & XMP_FORMAT_UNSIGNED ?
+				SND_PCM_FORMAT_U24 : SND_PCM_FORMAT_S24;
+		downmix_24 = 1;
+	} else if (~format & XMP_FORMAT_8BIT) {
+		fmt = format & XMP_FORMAT_UNSIGNED ?
+				SND_PCM_FORMAT_U16 : SND_PCM_FORMAT_S16;
 	} else {
-		fmt = format & XMP_FORMAT_8BIT ?
-				SND_PCM_FORMAT_S8 : SND_PCM_FORMAT_S16;
+		fmt = format & XMP_FORMAT_UNSIGNED ?
+				SND_PCM_FORMAT_U8 : SND_PCM_FORMAT_S8;
 	}
 
 	snd_pcm_hw_params_alloca(&hwparams);
@@ -83,6 +92,10 @@ static int init(struct options *options)
 static void play(void *b, int i)
 {
 	int frames = snd_pcm_bytes_to_frames(pcm_handle, i);
+
+	if (downmix_24) {
+		downmix_32_to_24_aligned((unsigned char *)b, i);
+	}
 
 	if (snd_pcm_writei(pcm_handle, b, frames) < 0) {
 		snd_pcm_prepare(pcm_handle);

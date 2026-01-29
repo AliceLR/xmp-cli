@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2016 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * This file is part of the Extended Module Player and is distributed
  * under the terms of the GNU General Public License. See the COPYING
@@ -121,7 +121,7 @@ static int read_buffer(unsigned char *data, int len)
 	return len;
 }
 
-static void render_proc(void *theCookie, void *buffer, size_t req, 
+static void render_proc(void *theCookie, void *buffer, size_t req,
 				const media_raw_audio_format &format)
 {
 	size_t amt;
@@ -161,6 +161,7 @@ static int init(struct options *options)
 
 	player = new BSoundPlayer(&fmt, "xmp output", render_proc);
 
+	options->format &= ~ XMP_FORMAT_32BIT;
 	return 0;
 }
 
@@ -182,7 +183,7 @@ static void play(void *b, int i)
 	}
 
 	if (paused) {
-		player->Start(); 
+		player->Start();
 		player->SetHasData(true);
 		paused = 0;
 	}
@@ -190,7 +191,7 @@ static void play(void *b, int i)
 
 static void deinit(void)
 {
-	player->Stop(); 
+	player->Stop();
 	be_app->Lock();
 	be_app->Quit();
 }
