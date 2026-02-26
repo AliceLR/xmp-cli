@@ -135,6 +135,7 @@ struct irq_handle *irq_hook(int irqno, irq_handler handler, irq_handler end)
 	__dpmi_version_ret version;
 	_go32_dpmi_seginfo info;
 	unsigned long old_sel, old_ofs;
+	unsigned long size;
 
 	__dpmi_get_version(&version);
 	if (irqno < 8)
@@ -153,14 +154,15 @@ struct irq_handle *irq_hook(int irqno, irq_handler handler, irq_handler end)
 		return NULL;
 
 	/* Lock the interrupt handler in memory */
-	if (dpmi_lock_linear_region_base((void *)handler, (unsigned long)end - (unsigned long)handler)) {
+	size = (unsigned long)end - (unsigned long)handler;
+	if (dpmi_lock_linear_region_base((void *)handler, size)) {
 		_free_iret_wrapper(&info);
 		return NULL;
 	}
 
 	irq = (struct irq_handle *) malloc(sizeof(struct irq_handle));
 	irq->c_handler = handler;
-	irq->handler_size = (unsigned long)end - (unsigned long)handler;
+	irq->handler_size = size;
 	irq->handler = info.pm_offset;
 	irq->prev_selector = old_sel;
 	irq->prev_offset = old_ofs;
@@ -170,7 +172,7 @@ struct irq_handle *irq_hook(int irqno, irq_handler handler, irq_handler end)
 
 	if (dpmi_lock_linear_region_base(irq, sizeof(struct irq_handle))) {
 		free(irq);
-		dpmi_unlock_linear_region_base((void *)handler, irq->handler_size);
+		dpmi_unlock_linear_region_base((void *)handler, size);
 		_free_iret_wrapper(&info);
 		return NULL;
 	}
