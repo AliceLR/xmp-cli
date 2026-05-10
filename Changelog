@@ -1,8 +1,8 @@
 Stable versions
 ---------------
 
-4.3.0 (?):
-	Changes by Alice Rowan
+4.3.0 (20260508):
+	Changes by Alice Rowan:
 	- Support 24-bit and 32-bit output (requires libxmp 4.7.0+):
 	  AHI, ALSA, BeOS/Haiku, CoreAudio, NetBSD, OSS, PulseAudio,
 	  sndio, WinMM, AIFF, file, WAV.
@@ -10,13 +10,14 @@ Stable versions
 	  (requires libxmp 4.7.0+).
 	- Amiga: automatically expand stack via stack cookie (OS 4),
 	  NewStackSwap (AROS), NewPPCStackSwap (MorphOS), or StackSwap
-	  (Workbench 2.04+). Runtime swapping can be disabled by
-	  defining XMP_NO_STACKSWAP.
+	  (Workbench 2.04+). This feature can be disabled by defining
+	  XMP_NO_STACKSWAP at compile time.
 	- Report pan value "---" for instruments/samples without
 	  a default panning value (sub->pan < 0).
 	- Don't unmute muted IT channels unless explicitly unmuted by
 	  the -S/--solo option.
-	- Haiku: Fix configure C++11 detection error message.
+	- Haiku: Fix configure C++ compiler detection if CXX variable
+	  contains additional options.
 	- AHI: fix crash on OpenDevice failure.
 	- ALSA: fix 8-bit and unsigned format mismatches after init.
 	- BeOS/Haiku: support 8-bit unsigned, strip unsigned otherwise.
