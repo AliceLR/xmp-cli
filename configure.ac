@@ -287,6 +287,6 @@ XMP_TRY_COMPILE(whether compiler understands -Wunused-result,
   int main(){}],
   CFLAGS="${CFLAGS} -Wno-unused-result")
 
-AC_CHECK_FUNCS(kill getopt_long usleep select)
+AC_CHECK_FUNCS(kill getopt_long nanosleep usleep select)
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT

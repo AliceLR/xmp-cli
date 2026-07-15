@@ -132,17 +132,32 @@ void amiga_getsystime(void *tv)
 }
 
 void delay_ms(unsigned int msec) {
+	const unsigned usec = msec * 1000U;
+
 	#if defined(__amigaos4__)
 	timerio->Request.io_Command = TR_ADDREQUEST;
-	timerio->Time.Seconds = msec / 1000000;
-	timerio->Time.Microseconds = msec % 1000000;
+	timerio->Time.Seconds = usec / 1000000;
+	timerio->Time.Microseconds = usec % 1000000;
 	#else
 	timerio->tr_node.io_Command = TR_ADDREQUEST;
-	timerio->tr_time.tv_secs = msec / 1000000;
-	timerio->tr_time.tv_micro = msec % 1000000;
+	timerio->tr_time.tv_secs = usec / 1000000;
+	timerio->tr_time.tv_micro = usec % 1000000;
 	#endif
 	SendIO((struct IORequest *) timerio);
 	WaitIO((struct IORequest *) timerio);
+}
+
+#elif defined(HAVE_NANOSLEEP)
+#include <time.h>
+#include <unistd.h>
+
+void delay_ms(unsigned int msec) {
+	const long usec = msec * 1000;
+	struct timespec ts;
+
+	ts.tv_sec  = (long)(usec / 1000000);
+	ts.tv_nsec = (long)(usec % 1000000) * 1000UL;
+	nanosleep(&ts, NULL);
 }
 
 #elif defined(HAVE_USLEEP)
@@ -170,10 +185,9 @@ void delay_ms(unsigned int msec) {
 #include <stddef.h>
 
 void delay_ms(unsigned int msec) {
+	const long usec = msec * 1000;
 	struct timeval tv;
-	long usec;
 
-	usec = msec * 1000;
 	tv.tv_sec = usec / 1000000;
 	tv.tv_usec = usec % 1000000;
 	select(0, NULL, NULL, NULL, &tv);
