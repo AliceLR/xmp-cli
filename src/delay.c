@@ -132,14 +132,16 @@ void amiga_getsystime(void *tv)
 }
 
 void delay_ms(unsigned int msec) {
+	const unsigned usec = msec * 1000U;
+
 	#if defined(__amigaos4__)
 	timerio->Request.io_Command = TR_ADDREQUEST;
-	timerio->Time.Seconds = msec / 1000000;
-	timerio->Time.Microseconds = msec % 1000000;
+	timerio->Time.Seconds = usec / 1000000;
+	timerio->Time.Microseconds = usec % 1000000;
 	#else
 	timerio->tr_node.io_Command = TR_ADDREQUEST;
-	timerio->tr_time.tv_secs = msec / 1000000;
-	timerio->tr_time.tv_micro = msec % 1000000;
+	timerio->tr_time.tv_secs = usec / 1000000;
+	timerio->tr_time.tv_micro = usec % 1000000;
 	#endif
 	SendIO((struct IORequest *) timerio);
 	WaitIO((struct IORequest *) timerio);
