@@ -1,6 +1,10 @@
 Stable versions
 ---------------
 
+4.3.1 (?):
+	- Use nanosleep() as the delay procedure on unices if available.
+	- Fixed Amiga version of the delay procedure.
+
 4.3.0 (20260508):
 	Changes by Alice Rowan:
 	- Support 24-bit and 32-bit output (requires libxmp 4.7.0+):
